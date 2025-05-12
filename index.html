@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta name="keywords" content="HoneySelect2, HS2, HS2管理器, KK管理器, Mod管理器, i社游戏管理器, illusion, illusion游戏, illusion mod, illusion资源, i社, i社游戏, 游戏管理器, 资源管理, 插件管理, 模组管理">
+  <meta name="description" content="X.R.M Prime Canvas 是一款专为 HoneySelect2、HS2、KK、i社等illusion系列游戏打造的高效Mod管理器、插件管理器和资源管理工具，支持一键管理、自动集成、云服务等多种功能。">
+  <title>X.R.M Prime Canvas - HoneySelect2/HS2/i社游戏/Mod/插件管理器</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <!-- FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
+  <!-- AOS Animate On Scroll -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css"/>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" type="image/png" href="https://img.icons8.com/color/48/rocket--v2.png">
+  <style>
+    html, body {
+      font-family: 'Inter', 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
+      background: #10131a;
+      color: #f3f4f6;
+      min-height: 100vh;
+      scroll-behavior: smooth;
+    }
+    .nav-glass {
+      background: rgba(24, 27, 38, 0.1);
+      backdrop-filter: blur(16px) saturate(180%);
+      -webkit-backdrop-filter: blur(16px) saturate(180%);
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      box-shadow: 0 2px 16px 0 rgba(0,0,0,0.12);
+    }
+    /* 背景横向瀑布流画廊+3D视角 */
+    .lx-bg-stack {
+      position: fixed;
+      left: 50%;
+      top: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+      /* 3D视角：俯视+倾斜 */
+      transform: translateX(-50%) perspective(1200px) rotateX(48deg)  rotateY(0deg) rotateZ(-64deg) scale(1.1);
+      will-change: transform;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+    }
+    .lx-bg-gallery-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      will-change: transform;
+      min-width: 160vw; /* 保证图片足够多，填满横向空间 */
+    }
+    .lx-bg-gallery-img {
+      width: 600px;
+      max-width: 40vw;
+      border-radius: 0;
+      box-shadow: 0 8px 32px 0 rgba(0,0,0,0.32);
+      background: #222;
+      object-fit: contain;
+      transition: filter 0.5s, opacity 0.5s, transform 0.5s;
+      filter: brightness(0.92) drop-shadow(0 2px 16px #0008);
+      /* 立体感：轻微Y轴旋转 */
+      transform: rotateY(-8deg) skewY(-2deg) rotate(90deg);
+      opacity: 0.92;
+    }
+    @media (max-width: 900px) {
+      .lx-bg-gallery-img { width: 90vw !important; }
+    }
+   
+    .fadein-up {
+      opacity: 0;
+      transform: translateY(40px) scale(0.98);
+      animation: fadeinUp 1.1s cubic-bezier(.23,1.12,.32,1) forwards;
+    }
+    .fadein-up.delay-1 { animation-delay: 0.15s;}
+    .fadein-up.delay-2 { animation-delay: 0.35s;}
+    .fadein-up.delay-3 { animation-delay: 0.55s;}
+    @keyframes fadeinUp {
+      0% { opacity: 0; transform: translateY(40px) scale(0.98);}
+      60% { opacity: 1; transform: translateY(-8px) scale(1.03);}
+      100% { opacity: 1; transform: translateY(0) scale(1);}
+    }
+    
+    .feature-word-bg {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #ffc72c;
+      color: #22292f;
+      border-radius: 0.7em;
+      min-width: 3.5em;
+      min-height: 2.2em;
+      font-weight: 700;
+      font-size: 1.1em;
+      margin-left: 0.6em;
+      box-shadow: 0 2px 8px 0 rgba(255,199,44,0.10);
+      position: relative;
+      text-align: center;
+      padding: 0 1.2em;
+      transition: width 0.3s, min-width 0.3s, background 0.2s;
+      overflow: hidden;
+      user-select: none;
+    }
+    .feature-word-inner {
+      display: inline-block;
+      font-size: 1.1em;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+    }
+    .feature-word-char {
+      display: inline-block;
+      opacity: 1;
+      transform: translateY(0);
+      transition: 
+        opacity 0.32s cubic-bezier(.23,1.12,.32,1),
+        transform 0.32s cubic-bezier(.23,1.12,.32,1);
+    }
+    .feature-word-char.jump {
+      opacity: 0;
+      transform: translateY(-1.1em) scale(1.2) rotate(-8deg);
+    }
+    .download-btn {
+      background: #ffc72c;
+      color: #22292f;
+      font-weight: 700;
+      border-radius: 0.7em;
+      padding: 0.7em 2.2em 0.7em 1.5em;
+      font-size: 1.15rem;
+      box-shadow: 0 2px 12px 0 rgba(255,199,44,0.13);
+      border: none;
+      outline: none;
+      cursor: pointer;
+      letter-spacing: 0.01em;
+      display: inline-flex;
+      align-items: center;
+      position: relative;
+      transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
+    }
+    .download-btn:hover {
+      background: #ffd966;
+      box-shadow: 0 4px 24px 0 rgba(255,199,44,0.22);
+      transform: translateY(-2px) scale(1.04);
+    }
+    .download-btn .fa-windows {
+      font-size: 1.3em;
+      margin-right: 0.7em;
+    }
+    .download-btn .fa-caret-down {
+      margin-left: 0.7em;
+      font-size: 1.1em;
+    }
+    .download-dropdown {
+      position: absolute;
+      top: 110%;
+      right: 0;
+      min-width: 140px;
+      background: #232a36;
+      color: #fff;
+      border-radius: 0.7em;
+      box-shadow: 0 8px 32px 0 rgba(0,0,0,0.22);
+      z-index: 20;
+      padding: 0.5em 0;
+      display: none;
+      animation: fadeinDrop 0.25s;
+    }
+    @keyframes fadeinDrop {
+      from { opacity: 0; transform: translateY(-10px);}
+      to { opacity: 1; transform: translateY(0);}
+    }
+    .download-dropdown.show {
+      display: block;
+    }
+    .download-dropdown button {
+      background: none;
+      border: none;
+      color: #fff;
+      width: 100%;
+      text-align: left;
+      padding: 0.7em 1.5em;
+      font-size: 1em;
+      cursor: pointer;
+      transition: background 0.18s;
+    }
+    .download-dropdown button:hover {
+      background: #2d3748;
+    }
+    .back-to-top {
+      position: fixed;
+      right: 2.2rem;
+      bottom: 2.2rem;
+      z-index: 50;
+      background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
+      color: #fff;
+      border-radius: 1.2em;
+      box-shadow: 0 4px 24px 0 rgba(59,130,246,0.22);
+      width: 3.2em;
+      height: 3.2em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5em;
+      cursor: pointer;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s, transform 0.2s;
+    }
+    .back-to-top.show {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+    .back-to-top:not(.show) {
+      transform: translateY(30px);
+    }
+    .matrix-bg {
+      background: #10131a;
+      border-radius: 1.5em;
+      overflow: hidden;
+      position: relative;
+      min-height: 320px;
+      min-width: 320px;
+      box-shadow: 0 8px 32px 0 rgba(0,0,0,0.22);
+    }
+    @media (max-width: 900px) {
+      .matrix-bg { min-width: 220px; min-height: 180px;}
+    }
+    @media (max-width: 600px) {
+      .main-title { font-size: 2.1rem !important; }
+      .main-desc { font-size: 1.1rem !important; }
+      .back-to-top { right: 1.1rem; bottom: 1.1rem; }
+      .matrix-bg { min-width: 120px; min-height: 120px;}
+    }
+    .optimize-title-animate-out {
+      opacity: 0;
+      transform: translateY(-20px) scale(0.95);
+      transition: all 0.4s cubic-bezier(.23,1.12,.32,1);
+    }
+    .optimize-title-animate-in {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      transition: all 0.4s cubic-bezier(.23,1.12,.32,1);
+    }
+    .optimize-theme-love {
+      background: linear-gradient(90deg, #ffb6c1 0%, #ffe4e1 100%) !important;
+    }
+    .optimize-title-love {
+      color: #ff4081 !important;
+      text-shadow: 0 2px 16px #ffb6c1;
+    }
+    .sakura-falling {
+      z-index: 1 !important;
+      pointer-events: none !important;
+    }
+    #optimize .custom-sakura-canvas {
+      position: absolute;
+      left: 0; top: 0;
+      width: 100%; height: 100%;
+      z-index: 1;
+      pointer-events: none;
+    }
+    #optimize {
+      position: relative;
+    }
+    .gallery-bg-glow {
+      position: absolute;
+      left: 0; top: 0; width: 100vw; height: 100vh;
+      z-index: 0;
+      pointer-events: none;
+      background: radial-gradient(circle at 60% 40%, rgba(80,180,255,0.18) 0%, rgba(80,180,255,0.08) 40%, transparent 80%),
+                  radial-gradient(circle at 30% 70%, rgba(255,180,120,0.13) 0%, rgba(255,180,120,0.06) 40%, transparent 80%);
+      overflow: hidden;
+    }
+    .footer-blur {
+      position: relative;
+      z-index: 100;
+      background: rgba(24, 27, 38, 0.1);
+      backdrop-filter: blur(16px) saturate(180%);
+      -webkit-backdrop-filter: blur(16px) saturate(180%);
+      color: #bfc4d1;
+      text-align: center;
+      padding: 2rem 0 1rem 0;
+      font-size: 1rem;
+      width: 100%;
+      box-shadow: 0 -2px 24px 0 rgba(0,0,0,0.12);
+    }
+  </style>
+</head>
+<body class="relative">
+
+<!-- 背景横向瀑布流画廊+3D视角 -->
+<div class="lx-bg-stack" aria-hidden="true">
+  <div class="gallery-bg-glow"></div>
+  <div class="lx-bg-gallery-row" id="galleryRow">
+    <img class="lx-bg-gallery-img" src="https://tupian.li/images/2025/05/12/68213c36b282b.png" />
+    <img class="lx-bg-gallery-img" src="https://tupian.li/images/2025/05/12/68213c5154f4a.png" />
+    <img class="lx-bg-gallery-img" src="https://tupian.li/images/2025/05/12/68213d2f2318c.gif" />
+    <img class="lx-bg-gallery-img" src="https://tupian.li/images/2025/05/12/68213c7a319d0.png" />
+    <img class="lx-bg-gallery-img" src="https://tupian.li/images/2025/05/12/68213c9fa621b.png" />
+    <img class="lx-bg-gallery-img" src="https://tupian.li/images/2025/05/12/68213cbe49096.png" />
+    <img class="lx-bg-gallery-img" src="https://tupian.li/images/2025/05/12/68213cd5755e3.png" />
+    <img class="lx-bg-gallery-img" src="https://tupian.li/images/2025/05/12/68213ceaee3ac.png" />
+    <img class="lx-bg-gallery-img" src="https://tupian.li/images/2025/05/12/68213cf6be7ae.png" />
+    <img class="lx-bg-gallery-img" src="https://tupian.li/images/2025/05/12/68213d064ec3e.png" />
+    <img class="lx-bg-gallery-img" src="https://tupian.li/images/2025/05/12/68213d4431876.jpg" />
+    <img class="lx-bg-gallery-img" src="https://tupian.li/images/2025/05/12/68213c13b448a.png" />
+    <img class="lx-bg-gallery-img" src="https://tupian.li/images/2025/05/12/68213bb02710e.png" />
+  </div>
+</div>
+
+<!-- 顶部导航 -->
+<nav class="nav-glass fixed top-0 left-0 w-full z-30 flex items-center justify-between px-8 py-3">
+  <div class="flex items-center gap-3">
+    <img src="https://img.icons8.com/ios-filled/50/ffffff/rocket--v2.png" alt="logo" class="w-8 h-8">
+    <span class="font-extrabold text-2xl tracking-tight text-white">XRMPC</span>
+  </div>
+  <ul class="hidden md:flex gap-8 items-center font-semibold text-base text-slate-200">
+    <li><a href="#home" class="hover:text-blue-400 transition">首页</a></li>
+    <li><a href="#features" class="hover:text-blue-400 transition">功能强大</a></li>
+    <li><a href="#optimize" class="hover:text-blue-400 transition">极致优化</a></li>
+    <li><a href="#integration" class="hover:text-blue-400 transition">资源集成</a></li>
+    <li><a href="#update" class="hover:text-blue-400 transition">快速响应</a></li>
+    <li>
+      <a href="https://xrm.winkai.top/" target="_blank" class="flex items-center gap-1 px-3 py-1 rounded-lg bg-slate-800 hover:bg-blue-600 text-white font-semibold shadow transition">
+        <i class="fa-solid fa-book-open"></i>
+        <span>知识库</span>
+      </a>
+    </li>
+    <li>
+      <a href="https://github.com/CuteWink/XRM-HomePage" target="_blank" class="flex items-center gap-1 px-3 py-1 rounded-lg bg-slate-800 hover:bg-blue-600 text-white font-semibold shadow transition">
+        <i class="fa-brands fa-github"></i>
+        <span>GitHub</span>
+      </a>
+    </li>
+  </ul>
+</nav>
+
+<!-- 首页主视觉 -->
+<section id="home" class="relative pt-32 pb-20 min-h-[90vh] flex flex-col items-center justify-center z-10">
+  <div class="w-full flex flex-col items-center z-10 relative max-w-2xl mx-auto">
+    <h1 class="main-title text-5xl md:text-6xl font-extrabold text-white mb-4 drop-shadow fadein-up delay-1 text-center">
+      X.R.M <span class="text-blue-400">Prime Canvas</span>
+    </h1>
+    <p class="main-desc text-xl md:text-2xl font-semibold text-slate-200 mb-3 max-w-2xl text-center fadein-up delay-2">
+      「一眼倾心，美力兼修」
+    </p>
+    <p class="main-desc text-base md:text-lg font-normal text-slate-400 mb-7 max-w-2xl text-center fadein-up delay-2">
+      让每一款游戏，都拥有专属的星辰大海。
+    </p>
+    <div class="fadein-up delay-3 relative">
+      <button class="download-btn" id="download-btn">
+        <i class="fa-brands fa-windows"></i>
+        立即下载
+        <i class="fa-solid fa-caret-down"></i>
+      </button>
+      <div class="download-dropdown" id="download-dropdown">
+        <button onclick="window.open('https://xrm.winkai.top/group-1/download','_blank')"><i class="fa-solid fa-download mr-2"></i>Windows X64</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 功能概括区 -->
+<section id="features" class="py-20 relative z-10 bg-[#10131a]">
+  <div class="max-w-5xl mx-auto px-4 flex flex-col md:flex-row items-center gap-12">
+    <div class="flex-1" data-aos="fade-up" data-aos-delay="100">
+      <h2 class="text-4xl font-extrabold mb-4 text-white" id="feature-title">强大的功能</h2>
+      <div class="text-2xl font-bold mb-2 flex items-center gap-2">
+        <span id="feature-notonly" class="text-slate-200">不仅仅是</span>
+        <span id="feature-word-bg" class="feature-word-bg">
+          <span id="feature-word-inner" class="feature-word-inner"></span>
+        </span>
+      </div>
+      <p class="text-lg text-slate-300 mb-6" id="feature-desc">
+        提供大量实用强大的功能，一站式管理你的所有游戏资源。<br>
+        一键启动、卡片管理、模组管理、插件管理，ALL IN ONE。
+      </p>
+      <a href="https://xrm.winkai.top/" target="_blank" class="inline-block px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold shadow transition" id="feature-more">
+        了解更多
+      </a>
+    </div>
+    <div class="flex-1 grid grid-cols-2 gap-4" data-aos="fade-up" data-aos-delay="200">
+      <div class="glass p-6 flex flex-col items-center text-center shadow-lg hover:scale-105 transition">
+        <i class="fa-solid fa-rocket text-3xl text-blue-400 mb-2"></i>
+        <span class="font-bold text-lg" id="feature-card1">一键启动</span>
+      </div>
+      <div class="glass p-6 flex flex-col items-center text-center shadow-lg hover:scale-105 transition">
+        <i class="fa-solid fa-layer-group text-3xl text-purple-400 mb-2"></i>
+        <span class="font-bold text-lg" id="feature-card2">卡片管理</span>
+      </div>
+      <div class="glass p-6 flex flex-col items-center text-center shadow-lg hover:scale-105 transition">
+        <i class="fa-solid fa-cubes text-3xl text-cyan-400 mb-2"></i>
+        <span class="font-bold text-lg" id="feature-card3">模组管理</span>
+      </div>
+      <div class="glass p-6 flex flex-col items-center text-center shadow-lg hover:scale-105 transition">
+        <i class="fa-solid fa-plug text-3xl text-pink-400 mb-2"></i>
+        <span class="font-bold text-lg" id="feature-card4">插件管理</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 极致的优化 -->
+<section id="optimize" class="py-20 relative z-10 bg-[#10131a]">
+  <div class="max-w-5xl mx-auto px-4 flex flex-col md:flex-row items-center gap-12">
+    <div class="flex-1" data-aos="fade-up" data-aos-delay="100">
+      <h2 class="text-3xl font-extrabold mb-4 text-white" id="optimize-title">极致的优化</h2>
+      <p class="text-lg text-slate-300 mb-6" id="optimize-desc">
+        XRMPC 的模块化架构，如同乐高宇宙的基石 ——开发者可重构游戏规则，玩家可定制体验，这里是工具的未来，也是开源生态的起点。
+      </p>
+      <p class="text-lg text-pink-400 font-semibold mb-2 hidden" id="love-desc">
+        在每一行代码里，我们都注入了最真挚的热爱与浪漫。<br>
+        这是一款用纯粹的爱与梦想开发的软件。<br>
+        愿你在星辰大海中，感受到开发者的心跳与温度。
+      </p>
+    </div>
+    <div class="flex-1 flex justify-center" data-aos="fade-up" data-aos-delay="200">
+      <div class="matrix-bg" style="width:100%;max-width:400px;height:260px;min-width:220px;min-height:120px;">
+        <canvas id="matrix-canvas" style="width:100%;height:100%;display:block;"></canvas>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 资源集成 -->
+<section id="integration" class="py-20 relative z-10 bg-[#10131a]">
+  <div class="max-w-5xl mx-auto px-4 flex flex-col md:flex-row items-center gap-12">
+    <div class="flex-1 flex justify-center" data-aos="fade-up" data-aos-delay="100">
+      <div class="integration-icons flex gap-6 justify-center items-center">
+        <div class="icon-item"><i class="fa-solid fa-cloud"></i></div>
+        <div class="icon-item"><i class="fa-solid fa-puzzle-piece"></i></div>
+        <div class="icon-item"><i class="fa-solid fa-box-archive"></i></div>
+      </div>
+    </div>
+    <div class="flex-1" data-aos="fade-up" data-aos-delay="200">
+      <h2 class="text-3xl font-extrabold mb-4 text-white">资源集成</h2>
+      <p class="text-lg text-slate-300 mb-6">
+        XRM云服务正在建设中，未来将为您提供一键式模组查询补全、插件兼容化处理更新、云协助共享策略。
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- 最新更新 -->
+<section id="update" class="py-20 relative z-10 bg-[#10131a]">
+  <div class="max-w-5xl mx-auto px-4 grid md:grid-cols-2 gap-12">
+    <div data-aos="fade-up" data-aos-delay="100">
+      <h2 class="text-3xl font-extrabold mb-4 text-white" id="update-title">持续进化，只为更好</h2>
+      <p class="text-lg text-slate-300 mb-6" id="update-desc">
+        最快日更的频率，源源不断的新功能推出。听取用户的意见，功能由用户决定！惊人的100%反馈响应率，我们一直在努力！
+      </p>
+      <div class="flex gap-12 text-center">
+        <div>
+          <div class="text-base text-white mb-1">修复时间</div>
+          <div class="flex items-center justify-center">
+            <i class="fa-solid fa-arrow-down text-green-500 text-2xl"></i>
+            <span class="count-flex">
+              <span class="text-2xl font-bold text-green-500 count-num" id="count-fix">69.25</span>
+              <span class="text-green-500 text-base percent-sign">%</span>
+            </span>
+          </div>
+        </div>
+        <div>
+          <div class="text-base text-white mb-1">更新频率</div>
+          <div class="flex items-center justify-center">
+            <i class="fa-solid fa-arrow-up text-yellow-400 text-2xl"></i>
+            <span class="count-flex">
+              <span class="text-2xl font-bold text-yellow-400 count-num" id="count-update">77.72</span>
+              <span class="text-yellow-400 text-base percent-sign">%</span>
+            </span>
+          </div>
+        </div>
+        <div>
+          <div class="text-base text-white mb-1">功能开发</div>
+          <div class="flex items-center justify-center">
+            <i class="fa-solid fa-arrow-up text-pink-500 text-2xl"></i>
+            <span class="count-flex">
+              <span class="text-2xl font-bold text-pink-500 count-num" id="count-feature">75.21</span>
+              <span class="text-pink-500 text-base percent-sign">%</span>
+            </span>
+          </div>
+        </div>
+        <div>
+          <div class="text-base text-white mb-1">反馈响应</div>
+          <div class="flex items-center justify-center">
+            <i class="fa-solid fa-arrow-up text-blue-400 text-2xl"></i>
+            <span class="count-flex">
+              <span class="text-2xl font-bold text-blue-400 count-num" id="count-feedback">100.00</span>
+              <span class="text-blue-400 text-base percent-sign">%</span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div></div>
+  </div>
+</section>
+
+<!-- 页脚 -->
+<footer class="py-8 bg-[#181b26] text-slate-500 text-center text-sm z-20 footer-blur">
+  <div>
+    &copy; 2025 X.R.M Prime Canvas (XRMPC) | Powered by <a href="https://xrmm.winkai.top/" class="underline hover:text-blue-400">SunMi</a>
+    | <a href="https://xrm.winkai.top/" target="_blank" class="underline hover:text-blue-400">知识库</a>
+  </div>
+</footer>
+
+<!-- 回到顶部按钮 -->
+<div class="back-to-top" id="backToTop" title="回到顶部">
+  <i class="fa-solid fa-arrow-up"></i>
+</div>
+
+<!-- 动效脚本 -->
+<script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+<script src="https://unpkg.com/canvas-sakura@1.0.1/sakura.min.js"></script>
+<script src="main.js"></script>
+</body>
+</html>
